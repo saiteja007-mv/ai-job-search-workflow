@@ -1,0 +1,22 @@
+# /home/<YOU>/.config/systemd/user/career-ops-linkedin-poll.service
+[Unit]
+Description=career-ops LinkedIn poll (detect invitation acceptances + inbound replies)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/<YOU>/career-ops
+# Leading "-" makes this optional. Unipile credentials come from the repo-root .env via
+# unipileConfig(); deploy/.env only supplies the Telegram token, and a missing token just
+# means no phone ping. Neither is worth refusing to start over.
+EnvironmentFile=-/home/<YOU>/career-ops/deploy/.env
+# Read-only against Unipile. This unit queues events for human review and never sends.
+# Not --quiet: the two summary lines are the whole audit trail in journald, and a timer
+# that logs nothing is one you cannot tell apart from a timer that is silently broken.
+ExecStart=/usr/bin/env node /home/<YOU>/career-ops/deploy/unipile-poll.mjs
+TimeoutStartSec=600
+
+# /home/<YOU>/.config/systemd/user/career-ops-linkedin-poll.service.d/10-poller.conf
+[Unit]
+OnFailure=job-failed@career\x2dops\x2dlinkedin\x2dpoll.service.service

@@ -1,0 +1,101 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0e0e0e" media="(prefers-color-scheme: dark)">
+<title>Outreach</title>
+<style>
+:root{--bg:#fff;--ink:#111;--mut:#6b6b6b;--line:#e6e6e6;--soft:#f4f4f4;--warn:#b45309;--bad:#b91c1c;--r:14px;--sab:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root{--bg:#0e0e0e;--ink:#f3f3f3;--mut:#9b9b9b;--line:#242424;--soft:#171717;--warn:#f59e0b;--bad:#f87171}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,Inter,"Segoe UI",Roboto,sans-serif}
+a{color:inherit}button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+.top{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:12px 16px;display:flex;align-items:center;gap:12px}
+.top h1{margin:0;font-size:17px;font-weight:650;letter-spacing:-.01em}.top .st{margin-left:auto;font-size:12px;color:var(--mut);white-space:nowrap}
+.top .rf{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:18px}.top .rf:active{background:var(--soft)}
+.tabs{display:none}
+.tabs button{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;padding:8px 4px;color:var(--mut);font-size:11px}
+.tabs button.on{color:var(--ink);font-weight:600}.tabs svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.desknav{display:flex;gap:4px;margin-left:8px}.desknav button{padding:7px 13px;border-radius:999px;border:1px solid var(--line)}.desknav button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+main{padding:16px;max-width:1080px;margin:0 auto;padding-bottom:calc(24px + var(--sab))}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.kpi{border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;min-height:74px}
+.kpi span{display:block;font-size:12px;color:var(--mut)}.kpi b{display:block;font-size:26px;font-weight:650;line-height:1.2;margin-top:2px;letter-spacing:-.02em}.kpi small{font-size:13px;color:var(--mut);font-weight:500}
+.strip{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:14px 0 4px;color:var(--mut);font-size:13px}.dot{width:8px;height:8px;border-radius:50%;background:var(--ink);display:inline-block;margin-right:6px}.dot.off{background:var(--bad)}
+h2{font-size:13px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;margin:22px 0 8px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none;margin:0 -16px;padding-left:16px;padding-right:16px}.chips::-webkit-scrollbar{display:none}
+.chips button{flex:0 0 auto;padding:7px 13px;border-radius:999px;border:1px solid var(--line);font-size:13px;white-space:nowrap}.chips button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.list{display:flex;flex-direction:column;gap:8px}
+.card{border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;display:grid;grid-template-columns:1fr auto;gap:4px 12px;text-align:left;width:100%}
+.card:active{background:var(--soft)}.card .who{font-weight:600;font-size:15px;line-height:1.3}.card .sub{font-size:13px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .txt{grid-column:1/-1;font-size:14px;color:var(--ink);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:2px}
+.card .t{font-size:12px;color:var(--mut);text-align:right;white-space:nowrap}.card .out{grid-column:2;text-align:right}
+.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:2px 9px;font-size:11.5px;color:var(--mut);white-space:nowrap;line-height:1.5}
+.pill.sent{border-color:var(--ink);color:var(--ink);font-weight:600}.pill.bad{color:var(--bad);border-color:var(--bad)}.pill.warn{color:var(--warn);border-color:var(--warn)}.pill.cls{border-style:dashed}
+.empty{color:var(--mut);padding:36px 12px;text-align:center;font-size:14px}
+.sheet{position:fixed;inset:0;background:var(--bg);z-index:10;transform:translateY(100%);transition:transform .22s ease;overflow:auto;-webkit-overflow-scrolling:touch;padding:0 16px calc(24px + var(--sab))}
+.sheet.open{transform:none}.sheet .bar{position:sticky;top:0;background:var(--bg);display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line);margin-bottom:12px;z-index:1}
+.sheet .bar button{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:20px}.sheet .bar b{font-size:16px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.msg{border:1px solid var(--line);border-radius:16px;padding:10px 13px;margin:8px 0;white-space:pre-wrap;max-width:88%;font-size:14.5px}.msg.me{background:var(--soft);margin-left:auto;border-color:transparent}.msg small{display:block;color:var(--mut);font-size:11.5px;margin-bottom:2px}
+.reply{border:1.5px solid var(--ink);border-radius:16px;padding:12px 14px;white-space:pre-wrap;margin:10px 0;font-size:14.5px}
+.box{border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;margin:10px 0;font-size:14px}.box h3{margin:0 0 6px;font-size:12px;color:var(--mut);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.meta{font-size:12.5px;color:var(--mut);word-break:break-all;margin-top:14px}
+.sys{display:grid;grid-template-columns:1fr;gap:10px}.sys dl{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;margin:0;font-size:14px}.sys dt{color:var(--mut)}.sys dd{margin:0;word-break:break-word}
+.run{border:1px solid var(--line);border-radius:var(--r);padding:10px 14px;font-size:13.5px}.run .h{display:flex;justify-content:space-between;color:var(--mut);font-size:12.5px;margin-bottom:4px}
+.grid-runs{display:flex;flex-direction:column;gap:8px}
+@media(max-width:760px){.tabs{display:flex;position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--line);padding-bottom:var(--sab);z-index:6}.desknav{display:none}main{padding-bottom:calc(76px + var(--sab))}.top .st{display:none}}
+@media(min-width:761px){.kpis{grid-template-columns:repeat(6,1fr)}.list{gap:6px}.sheet{inset:0 0 0 auto;width:min(640px,100%);border-left:1px solid var(--line);transform:translateX(100%)}.sys{grid-template-columns:1fr 1fr}.card{padding:12px 16px}}
+</style></head><body>
+<div class="top"><h1>Outreach</h1><span class="st" id="stamp"></span>
+<div class="desknav"><button data-v="home" class="on">Home</button><button data-v="activity">Activity</button><button data-v="runs">Runs</button><button data-v="system">System</button></div>
+<button class="rf" title="Refresh" onclick="load(true)">↻</button></div>
+<main id="main"><div class="empty">Loading…</div></main>
+<nav class="tabs">
+<button data-v="home" class="on"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Home</button>
+<button data-v="activity"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H8l-4 4z"/></svg>Activity</button>
+<button data-v="runs"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Runs</button>
+<button data-v="system"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>System</button>
+</nav>
+<div class="sheet" id="sheet"><div class="bar"><button onclick="closeSheet()" aria-label="Back">←</button><b id="sheetTitle"></b></div><div id="sheetBody"></div></div>
+<script>
+const $=(s)=>document.querySelector(s);let EV=[],SYS={},RUNS=[],view='home',chip='all';
+const esc=(s)=>String(s??'').replace(/[&<>"]/g,(c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ago=(iso)=>{if(!iso)return'';const m=(Date.now()-Date.parse(iso))/60000;if(m<1)return'now';if(m<60)return Math.round(m)+'m';if(m<1440)return Math.round(m/60)+'h';return Math.round(m/1440)+'d'};
+const when=(iso)=>iso?new Date(iso).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'';
+const recent=(e,d=7)=>Date.parse(e.occurred_at)>Date.now()-d*864e5;
+const first=(n)=>String(n||'').split(/[\s,]+/)[0];
+function verdict(e){if(e.kind==='accepted')return'<span class="pill">accepted</span>';if(e.status==='sent')return'<span class="pill sent">Sent</span>';if(e.status==='dismissed')return`<span class="pill">${esc(e.dismiss_reason||'skipped')}</span>`;if(e.send?.error)return'<span class="pill bad">Send failed</span>';if(e.send?.skipped)return'<span class="pill warn">Not sent</span>';if(e.draft?.text)return'<span class="pill">Drafted</span>';if(e.draft?.error)return'<span class="pill warn">Needs you</span>';return'<span class="pill">New</span>'}
+const needsYou=(e)=>e.kind==='replied'&&e.status==='new'&&recent(e)&&!e.send?.ok;
+async function load(manual){try{const [e,s,r]=await Promise.all([fetch('/api/events').then(r=>r.json()),fetch('/api/system').then(r=>r.json()),fetch('/api/runs').then(r=>r.json())]);EV=e;SYS=s;RUNS=r;$('#stamp').textContent='updated '+new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});render()}catch(err){$('#main').innerHTML='<div class="empty">Could not load. '+esc(err.message)+'</div>'}}
+function setView(v){view=v;chip=v==='activity'?chip:'all';render();window.scrollTo(0,0)}
+function render(){document.querySelectorAll('[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===view));const m=$('#main');
+ m.innerHTML=view==='home'?home():view==='activity'?activity():view==='runs'?runs():system()}
+function card(e){const who=e.name||e.public_id||(e.company?'Someone at '+e.company:'Unknown');const sub=[e.company,e.headline].filter(Boolean).join(' · ');
+ const what=e.kind==='accepted'?'Accepted your invitation':(e.status==='sent'&&e.draft?.text)?'You: '+e.draft.text:(e.preview||'');
+ return`<button class="card" onclick="openEvent('${esc(e.id)}')"><div class="who">${esc(who)}</div><div class="t">${esc(when(e.occurred_at))}</div><div class="sub">${esc(sub)||'&nbsp;'}</div><div class="out">${verdict(e)}</div><div class="txt">${e.cls&&e.kind==='replied'?`<span class="pill cls">${esc(e.cls)}</span> `:''}${esc(what)}</div></button>`}
+function list(rows,empty){return rows.length?`<div class="list">${rows.map(card).join('')}</div>`:`<div class="empty">${empty}</div>`}
+function home(){const d=new Date().toISOString().slice(0,10);const today=EV.filter(e=>String(e.sent_at||'').startsWith(d)).length;const need=EV.filter(needsYou);const last=RUNS[0];const tl=(SYS.timer_line||'').split(/\s+/);const next=tl[4]?'in '+tl[4]:(tl[2]?'at '+tl[2].slice(0,5):'');
+ return`<div class="kpis"><div class="kpi"><span>Sent today</span><b>${today}<small> msgs</small></b></div><div class="kpi"><span>Needs you</span><b>${need.length}</b></div><div class="kpi"><span>Replies · 7d</span><b>${EV.filter(e=>e.kind==='replied'&&recent(e)).length}</b></div><div class="kpi"><span>Accepted · 7d</span><b>${EV.filter(e=>e.kind==='accepted'&&recent(e)).length}</b></div><div class="kpi"><span>Auto-send</span><b>${SYS.autosend?'On':'Off'}</b></div><div class="kpi"><span>Last poll</span><b>${last?esc(ago(last.started)):'–'}<small> ago</small></b></div></div>
+ <div class="strip"><span><span class="dot ${SYS.assist_up&&SYS.linkedin_mcp_up?'':'off'}"></span>${SYS.assist_up&&SYS.linkedin_mcp_up?'All services up':'A service is down'}</span><span>·</span><span>next poll ${esc(next)||'—'}</span><span>·</span><span>${esc(SYS.models?.[0]||'')}</span></div>
+ ${need.length?`<h2>Needs you</h2>${list(need,'')}`:''}
+ <h2>Recent</h2>${list(EV.slice(0,12),'Nothing yet.')}`}
+function activity(){const chips=[['all','All'],['replied','Replies'],['sent','Sent'],['needs','Needs you'],['accepted','Accepted']];
+ const rows=EV.filter(e=>chip==='all'||(chip==='replied'&&e.kind==='replied')||(chip==='sent'&&e.status==='sent')||(chip==='needs'&&needsYou(e))||(chip==='accepted'&&e.kind==='accepted'));
+ return`<div class="chips">${chips.map(([k,l])=>`<button class="${chip===k?'on':''}" onclick="chip='${k}';render()">${l}</button>`).join('')}</div>${list(rows,'Nothing here.')}`}
+function runs(){return RUNS.length?`<div class="grid-runs">${RUNS.map(r=>`<div class="run"><div class="h"><span>${esc(when(r.started))}</span><span>${r.running?'<span class="pill warn">running</span>':r.ok?'<span class="pill">ok</span>':'<span class="pill bad">failed</span>'}</span></div>${r.lines.map(esc).join('<br>')||'<span style="color:var(--mut)">no output</span>'}</div>`).join('')}</div>`:'<div class="empty">No runs yet.</div>'}
+function system(){const s=SYS;const led=(o)=>Object.entries(o||{}).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<dt>${esc(k.replace(/^linkedin_/,''))}</dt><dd>${v}</dd>`).join('')||'<dd style="color:var(--mut)">none</dd>';const up=(b)=>b?'up':'<span style="color:var(--bad)">down</span>';
+ return`<div class="sys"><div class="box"><h3>Pipeline</h3><dl><dt>Auto-send</dt><dd>${s.autosend?'On':'Off'} · replies uncapped · invites ${s.invite_cap}/day · ≤${s.max_drafts} drafts/run</dd><dt>Timer</dt><dd>${esc(s.poll_service_active)} · next ${esc(((s.timer_line||'').split(/\s+/)[4])?'in '+(s.timer_line||'').split(/\s+/)[4]:'—')}</dd><dt>Last run</dt><dd>${esc(when(s.state?.lastRunAt))} (${ago(s.state?.lastRunAt)} ago)</dd><dt>Sent today</dt><dd>${(() => { const sd=s.state?.sends; if (sd?.date!==new Date().toISOString().slice(0,10)) return '0'; return `${sd.messages ?? sd.count ?? 0} messages, ${sd.invites ?? 0} invitations`; })()}</dd></dl></div>
+ <div class="box"><h3>Services</h3><dl><dt>Assist</dt><dd>${up(s.assist_up)}</dd><dt>LinkedIn MCP</dt><dd>${up(s.linkedin_mcp_up)}</dd><dt>Codex</dt><dd>${s.codex?`valid until ${esc(when(s.codex.access_expires_at))}`:'<span style="color:var(--bad)">not logged in</span>'}</dd><dt>Models</dt><dd>${(s.models||[]).map(esc).join('<br>')}</dd></dl></div>
+ <div class="box"><h3>Ledger · 7 days</h3><dl>${led(s.ledger_7d)}</dl></div><div class="box"><h3>Ledger · 30 days</h3><dl>${led(s.ledger_30d)}</dl></div></div>`}
+async function openEvent(id){const e=await fetch('/api/event?id='+encodeURIComponent(id)).then(r=>r.json());if(!e)return;
+ $('#sheetTitle').textContent=e.name||e.public_id||e.company||'Unknown';const b=$('#sheetBody');
+ b.innerHTML=`<div style="color:var(--mut);font-size:13px">${esc([e.company,e.headline].filter(Boolean).join(' · '))}</div><div style="margin:8px 0 4px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">${verdict(e)}${e.cls?`<span class="pill cls">${esc(e.cls)}</span>`:''}<span style="color:var(--mut);font-size:12.5px">${esc(when(e.occurred_at))}</span>${e.profile_url?`<a style="font-size:12.5px;margin-left:auto" href="${esc(e.profile_url)}" target="_blank" rel="noopener">Profile ↗</a>`:''}</div>
+ ${e.kind==='accepted'?`<div class="box">Accepted your invitation.${e.status==='sent'?' First message sent below.':e.status==='dismissed'?' No message needed: '+esc(e.dismiss_reason||'')+'.':' First message pending the next poll.'}</div>`:''}
+ ${(e.thread||[]).length?`<h2>Thread</h2>${e.thread.map(m=>`<div class="msg ${m.from==='me'?'me':''}"><small>${m.from==='me'?'You':esc(first(e.name)||'Them')}</small>${esc(m.text)}</div>`).join('')}`:''}
+ ${e.draft?.text?`<h2>${e.status==='sent'?'Sent reply':'Draft'}</h2><div class="reply">${esc(e.draft.text)}</div><div style="color:var(--mut);font-size:12.5px">${esc(e.draft.model||'')}${e.draft.fallback_reason?' · fallback: '+esc(e.draft.fallback_reason):''}</div>`:''}
+ ${e.draft?.error?`<div class="box"><h3>No reply drafted</h3>${esc(e.draft.error)}${e.draft.withheld?`<div style="color:var(--mut);margin-top:6px">Withheld: ${esc(e.draft.withheld)}</div>`:''}</div>`:''}
+ ${e.send?`<div class="box"><h3>Send</h3>${e.send.ok?`Sent ${esc(when(e.sent_at))}`:e.send.error?`<span style="color:var(--bad)">Failed: ${esc(e.send.error)}</span>`:`Not sent: ${esc(e.send.skipped)}`}</div>`:''}
+ <div class="meta">${esc(e.id)}<br>detected ${esc(when(e.detected_at))}</div>`;
+ $('#sheet').classList.add('open');history.pushState({sheet:1},'')}
+function closeSheet(){$('#sheet').classList.remove('open')}
+window.addEventListener('popstate',()=>closeSheet());
+document.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>setView(b.dataset.v));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
+load();setInterval(()=>load(false),60000);
+</script></body></html>

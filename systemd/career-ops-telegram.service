@@ -1,0 +1,16 @@
+# /home/<YOU>/.config/systemd/user/career-ops-telegram.service
+[Unit]
+Description=career-ops Telegram control bot (LinkedIn poller commands + item actions)
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/career-ops
+EnvironmentFile=%h/career-ops/deploy/.env
+Environment=PATH=%h/.nvm/versions/node/v24.14.0/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=%h/.nvm/versions/node/v24.14.0/bin/node %h/career-ops/deploy/telegram-control.mjs
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

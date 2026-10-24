@@ -1,0 +1,11 @@
+# /home/<YOU>/.config/systemd/user/warm-outbound.timer
+[Unit]
+Description=Run warm-outbound weekdays at 09:37 <YOUR_TZ>
+
+[Timer]
+OnCalendar=Mon..Fri 09:37 <YOUR_TZ>
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target

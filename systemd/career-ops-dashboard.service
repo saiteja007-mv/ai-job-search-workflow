@@ -1,0 +1,14 @@
+# /home/<YOU>/.config/systemd/user/career-ops-dashboard.service
+[Unit]
+Description=career-ops outreach dashboard (read-only, basic auth, port 42837)
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/<YOU>/career-ops
+ExecStart=/usr/bin/env node /home/<YOU>/career-ops/deploy/outreach-dashboard.mjs
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

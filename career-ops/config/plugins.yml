@@ -1,0 +1,4 @@
+# career-ops plugin activation — see config/plugins.example.yml
+plugins:
+  h1b-sponsor:
+    enabled: true

@@ -1,0 +1,128 @@
+# Career-Ops Profile Configuration   (placeholder version of the gitignored config/profile.yml)
+# Single source of truth for personal data across all modes. Every value below is a placeholder.
+# Custom keys added on top of upstream's config/profile.example.yml: outreach, location.priority_tiers,
+# location work-authorization block, pipeline_filter, screen.typesafe.
+
+candidate:
+  full_name: "<YOUR_NAME>"
+  # Primary application email. EVERY application submitted from career-ops uses this address.
+  email: "<YOUR_EMAIL>"
+  phone: "<YOUR_PHONE>"
+  location: "<YOUR_CITY>, USA"
+  # Full street address lives HERE ONLY (file is gitignored). Resumes and public output use city + state only.
+  home_address: "<YOUR_ADDRESS>"
+  linkedin: "https://www.linkedin.com/in/<PROFILE_SLUG>/"
+  portfolio_url: "https://www.<YOUR_DOMAIN>/"
+  github: "https://github.com/<YOUR_GITHUB>/"
+
+# Outreach email identity (non-secret). The primary address is a verified "Send mail as" alias on a personal Gmail;
+# DMARC is p=reject, so ONLY send it via lib/outreach-email.mjs (Unipile Gmail account with `from` set) or the gog CLI --from.
+outreach:
+  from: "<YOUR_EMAIL>"
+  gmail_account: "<YOUR_EMAIL>"
+  legacy_email: "<LEGACY_EMAIL>"
+  legacy_cutoff: "YYYY-MM-DD"
+  # Tsenta applications before this instant (ISO, UTC) were submitted with legacy_email.
+  tsenta_switch_date: "YYYY-MM-DDTHH:MM:SSZ"
+  tsenta_legacy_profile_id: "<TSENTA_LEGACY_PROFILE_ID>"   # never pass this to apply-to-job any more
+
+target_roles:
+  primary:
+    - "<TARGET_ROLE> (e.g. AI/ML Engineer)"
+    - "Machine Learning Engineer"
+    - "Machine Learning Engineer I"
+    - "Machine Learning Engineer II"
+    - "ML Engineer"
+    - "Applied AI Engineer"
+    - "Machine Learning Engineer, Ranking"      # ranking / recsys / ads family
+    - "Software Engineer, Machine Learning"     # SWE-with-ML had the lowest near-miss rate
+    - "Software Engineer, Early Career"
+  level_filter: "entry_mid_intern"   # Entry + Mid (I/II) + Intern. HARD-REJECT Senior/Staff/Lead/Manager/III/IV/Principal.
+  archetypes:
+    - { name: "Machine Learning Engineer",                          level: "Entry / Mid (I/II)", fit: "primary" }
+    - { name: "ML Engineer - Ranking / Recsys / Ads",               level: "Entry / Mid (I/II)", fit: "primary" }
+    - { name: "Applied AI Engineer (RAG / retrieval / grounding)",  level: "Entry / Mid (I/II)", fit: "primary" }
+    - { name: "Software Engineer, ML / AI",                         level: "Entry / Mid (I/II) / Early Career", fit: "primary" }
+    - { name: "NLP / LLM Engineer",        level: "Entry / Mid (I/II)", fit: "adjacent" }   # title is rarely used; market ships it as "AI Engineer"
+    - { name: "MLOps / ML Platform Engineer", level: "Entry / Mid (I/II)", fit: "adjacent" } # most reqs want platform-building, not using MLOps tools
+    - { name: "Data Scientist (applied ML / experimentation)", level: "Entry / Junior / II", fit: "adjacent" }
+
+narrative:
+  headline: "<YOUR_HEADLINE>"
+  exit_story: "<YOUR_EXIT_STORY>"
+  superpowers:
+    - "<SUPERPOWER_1>"
+    - "<SUPERPOWER_2>"
+  proof_points:
+    - { name: "<PROOF_1>", hero_metric: "<EXACT_METRIC_FROM_CV>" }
+    - { name: "<PROOF_2>", hero_metric: "<EXACT_METRIC_FROM_CV>" }
+
+compensation:
+  target_range: "<TARGET_COMP_RANGE>"
+  currency: "USD"
+  minimum: "<MIN_COMP>"
+  location_flexibility: "Open to remote, hybrid, or on-site in USA"
+
+location:
+  country: "United States"
+  search_scope: "USA-wide"          # fetch nationwide; tiers RANK results, they do not filter them
+  city: "<YOUR_CITY>"               # home base only; not a search filter
+  timezone: "<TZ>"
+  # Tiered location preference. Ranking only: every US location stays in scope. See modes/_profile.md.
+  priority_tiers:
+    - { tier: remote_us, score: 5.0, match: ["remote", "remote - us", "remote (united states)", "us remote"] }
+    - { tier: 1, score: 5.0, label: "<TIER_1_REGION>", match: ["<city>", "<metro>"] }
+    - { tier: 2, score: 4.7, label: "<TIER_2_FIRST_CITY>", startup_bump: 0.2, match: ["<city>"] }   # bump capped at 5.0
+    - { tier: 2, score: 4.5, label: "<TIER_2_OTHER_METROS>", match: ["<city>", ", <ST>"] }
+    - { tier: 3, score: 4.5, label: "<YOUR_CITY> metro", match: ["<suburb>", ", <ST>"] }
+    - { tier: 4, score: 4.0, label: "Any other US state", match: ["*"] }
+  relocation: "<RELOCATION_POLICY_TEXT>"
+  # Work authorization (exact facts; used verbatim when a form asks). The opt_*, stem_opt_* and h1b_* keys
+  # only apply to student work permits such as F-1 OPT; delete them if they do not apply to you.
+  visa_status: "<YOUR_WORK_AUTH_STATUS>; <YOUR_SPONSORSHIP_POSITION>"
+  opt_ead_start: "<WORK_AUTH_DATE>"
+  opt_ead_end: "<WORK_AUTH_DATE>"
+  opt_ead_category: "<CATEGORY>"
+  stem_opt_extension: "<ELIGIBILITY_AND_WINDOW>"
+  h1b_lottery_attempts_used: 0
+  sponsor_targeting: true            # sponsor evidence is a ranking signal, never a gate
+  stem_opt_employer_requirements: "E-Verify enrolled; bona fide direct employer-employee relationship; same employer trains and signs Form I-983; 20+ hrs/week"
+  key_dates:
+    stem_opt_filing_window: "<90 days before EAD end; file within 60 days of the DSO's SEVIS recommendation>"
+    h1b_registration: "<MONTH YEAR>"
+    unemployment_limit: "<IF_APPLICABLE>"
+  # TWO DIFFERENT GATES, do not conflate:
+  #   SPONSORSHIP gate -> NOT a reject.      US-PERSON gate (ITAR/EAR/export control) -> HARD BLOCK if you are not a U.S. Person.
+  us_person_for_export_control: false
+  export_control_note: "<EMPLOYER_CLUSTERS_NOT_WORTH_AN_APPLICATION>"
+
+# Inbox triage gate for scan.mjs -> data/pipeline.md. Without it a broad sweep appends every hit
+# (one run left 848 pending of which 31 were actionable). Every filtered offer is logged to data/discard.log.
+pipeline_filter:
+  enabled: true
+  # `us_only` is an ALLOWLIST (drops any posting whose location string does not literally contain USA/United States/Remote/US
+  # or a ", XX" state code). It rejects on AMBIGUITY, not on evidence of being non-US, so it silently lost good US roles.
+  # Turned OFF: portals.yml `location_filter` (a real blocklist) still removes ~150/run, and the eval gate reads the JD anyway.
+  us_only: false
+  drop_senior: true
+  drop_intern: true
+  drop_unsupported_ats: true
+  # Cleared-work shops. scan.mjs does a plain SUBSTRING match on the company string and ATS slugs drop spaces,
+  # so list BOTH spaced and slug forms ("examplefederalservices" does not contain "example federal").
+  extra_company_blocklist:
+    - "<federal contractor>"
+    - "<federalcontractor>"
+    # typical entries: booz allen, general dynamics, sierra nevada, leidos, peraton, mantech, northrop, raytheon,
+    # lockheed, l3harris, anduril, amentum, mitre (each in spaced + slug form)
+
+# First-pass JD screen via TypeSafe (typesafe-screen.mjs). Off by default. Runs between the JobSpy sweep and the A-G evaluation,
+# only removes postings that fail a HARD rule at high confidence; never rejects on fit or on sponsorship language.
+# Key: TYPESAFE_API_KEY in .env.
+screen:
+  typesafe:
+    enabled: true
+    min_confidence: 0.6      # a Choice must be at least this sure before it can reject
+    phd_threshold: 0.8       # P(PhD is a hard requirement) that rejects
+    readable_threshold: 0.3  # below this the text is treated as not a JD (skipped, not rejected)
+    max_forward: 25          # candidates handed to the evaluator per round, best fit first
+    concurrency: 4

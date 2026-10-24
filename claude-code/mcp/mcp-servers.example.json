@@ -1,0 +1,45 @@
+{
+  "_comment": [
+    "Job-search MCP servers as configured in ~/.claude.json (user scope) on the workstation. Secrets are placeholders.",
+    "Only servers the job-search workflow actually calls are listed. See mcp-notes.md for tool lists, auth model and gotchas.",
+    "Copy the 'mcpServers' block into ~/.claude.json, or add each with: claude mcp add --transport http <name> <url> --header \"Authorization: <AUTH_HEADER_VALUE>\""
+  ],
+  "mcpServers": {
+    "tsenta": {
+      "type": "http",
+      "url": "https://api.autojobs.me/api/v1/mcp"
+    },
+    "linkedin": {
+      "type": "http",
+      "url": "https://linkedin.<YOUR_DOMAIN>/mcp",
+      "headers": { "Authorization": "<AUTH_HEADER_VALUE_LINKEDIN_MCP>" }
+    },
+    "happenstance": {
+      "type": "http",
+      "url": "https://happenstance.ai/mcp"
+    },
+    "tinyfish": {
+      "type": "http",
+      "url": "https://agent.tinyfish.ai/mcp",
+      "headers": { "X-API-Key": "<TINYFISH_API_KEY>" }
+    },
+    "jev-web": {
+      "type": "http",
+      "url": "http://127.0.0.1:8767/mcp",
+      "headers": { "Authorization": "<AUTH_HEADER_VALUE_JEV_WEB>" }
+    },
+    "memory": {
+      "type": "http",
+      "url": "https://memory.<YOUR_DOMAIN>/mcp",
+      "headers": { "Authorization": "<AUTH_HEADER_VALUE_MEMORY_MCP>" }
+    }
+  },
+  "_project_level": {
+    "<CAREER_OPS_DIR>/.mcp.json": {
+      "mcpServers": {
+        "code-review-graph": { "type": "stdio", "command": "uvx", "args": ["code-review-graph", "serve"] }
+      }
+    },
+    "_note": "The career-ops repo has no job-search MCP of its own; only the code-review-graph dev helper is project-scoped (also mirrored in .cursor/mcp.json and .opencode.json)."
+  }
+}

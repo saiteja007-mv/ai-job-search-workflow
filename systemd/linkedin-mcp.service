@@ -1,0 +1,16 @@
+# /home/<YOU>/.config/systemd/user/linkedin-mcp.service
+[Unit]
+Description=LinkedIn MCP server (Unipile)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/<YOU>/linkedin-mcp
+ExecStart=/usr/bin/env node server/index.cjs
+Restart=always
+RestartSec=5
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=default.target

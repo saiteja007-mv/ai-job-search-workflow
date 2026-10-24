@@ -1,0 +1,12 @@
+# /home/<YOU>/.config/systemd/user/tsenta-slot@1800.timer
+[Unit]
+Description=Run Tsenta slot 1800 daily at 18:00
+
+[Timer]
+OnCalendar=*-*-* 18:00:00
+Persistent=false
+RandomizedDelaySec=60
+Unit=tsenta-slot@1800.service
+
+[Install]
+WantedBy=timers.target

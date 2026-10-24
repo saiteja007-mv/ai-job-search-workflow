@@ -1,0 +1,12 @@
+# /home/<YOU>/.config/systemd/user/nightly-hermes-update.timer
+[Unit]
+Description=Run Hermes auto-update while <YOUR_NAME> is likely asleep
+
+[Timer]
+OnCalendar=*-*-* 03:30:00
+RandomizedDelaySec=30m
+Persistent=true
+Unit=nightly-hermes-update.service
+
+[Install]
+WantedBy=timers.target

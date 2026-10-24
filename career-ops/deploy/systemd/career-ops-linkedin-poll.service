@@ -1,0 +1,20 @@
+[Unit]
+Description=career-ops LinkedIn poll: fallback sweep for acceptances + inbound replies (webhooks are primary)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=__REPO__
+# Leading "-" makes this optional. Unipile credentials come from the repo-root .env via
+# unipileConfig(); deploy/.env only supplies the Telegram token, and a missing token just
+# means no phone ping. Neither is worth refusing to start over.
+EnvironmentFile=-__REPO__/deploy/.env
+# Read-only against Unipile. This unit queues events for human review and never sends.
+# Since 2026-09-11 the realtime path is the Unipile webhook -> Hermes -> guarded sender
+# (see reports/linkedin-webhook-autoreply-runbook-2026-09-11.md); this sweep only catches
+# what the webhook missed, on the sparse randomized cadence in the .timer.
+# Not --quiet: the two summary lines are the whole audit trail in journald, and a timer
+# that logs nothing is one you cannot tell apart from a timer that is silently broken.
+ExecStart=/usr/bin/env node __REPO__/deploy/unipile-poll.mjs
+TimeoutStartSec=600

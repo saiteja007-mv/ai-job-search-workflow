@@ -1,0 +1,23 @@
+# /home/<YOU>/.config/systemd/user/warm-outbound.service
+[Unit]
+Description=Warm LinkedIn outbound — superagnt discovery (phase 1) + guarded send (phase 2)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/<YOU>/automations/jobs/warm-outbound
+Environment=PATH=/home/<YOU>/.local/bin:/home/<YOU>/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Environment=WARM_OUTBOUND_DRY_RUN=0
+Environment=WARM_OUTBOUND_DAILY_CAP=8
+ExecStart=/home/<YOU>/automations/bin/run-job warm-outbound slack:<SLACK_CHANNEL_ID> -- /home/<YOU>/automations/jobs/warm-outbound/run.sh
+TimeoutStartSec=45min
+Nice=10
+
+# /home/<YOU>/.config/systemd/user/warm-outbound.service.d/10-poller.conf
+[Unit]
+OnFailure=job-failed@warm\x2doutbound.service.service
+
+# /home/<YOU>/.config/systemd/user/warm-outbound.service.d/node24.conf
+[Service]
+Environment=PATH=/home/<YOU>/.nvm/versions/node/v24.14.0/bin:/home/<YOU>/.local/bin:/home/<YOU>/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin

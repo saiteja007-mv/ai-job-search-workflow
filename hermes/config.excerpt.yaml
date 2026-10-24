@@ -1,0 +1,146 @@
+# Excerpt of ~/.hermes/config.yaml (Hermes Agent, _config_version 51) -- only the parts the
+# job-search workflow depends on. Secrets, ids, hostnames and unrelated platform wiring removed.
+# After ANY change here: restart the gateway (systemctl --user restart hermes-gateway.service)
+# from a shell the gateway does not own, or send /restart in Slack. Config/tool/schema changes are
+# not picked up by a running gateway session.
+
+# ---- Model: Claude Pro/Max subscription via the `claude` CLI, no API key ----------------------
+model:
+  default: claude-sonnet-5[1m]                    # fleet default; the recruiter cron pins claude-sonnet-5-5
+  provider: claude-subscription-directsdk-experimental
+  base_url: process://claude-subscription-directsdk-experimental
+  api_mode: chat_completions
+
+providers:                                        # extra routes used only as fallbacks
+  omniroute:
+    name: OmniRoute (free-tier fallback)
+    api: http://127.0.0.1:20128/v1                # local OpenAI-compatible router
+    key_env: <ENV_VAR_NAME>                       # name of the env var holding the key
+    default_model: hermes-fallback
+    models:
+      hermes-fallback: { context_length: 131072 }
+  gemma-local:
+    name: Gemma 4 26B Local
+    api: http://<SERVER_IP>:8081/v1               # OpenAI-compatible local model server on a tailnet host
+    default_model: gemma-4-26b-a4b-it-qat-q4-xl
+    models:
+      gemma-4-26b-a4b-it-qat-q4-xl: { context_length: 248064 }
+
+fallback_providers:                               # tried in order when the primary errors
+  - { provider: claude-subscription-directsdk-experimental, model: claude-sonnet-5-5 }
+  - { provider: custom, model: hermes-fallback, base_url: "http://127.0.0.1:20128/v1", key_env: <ENV_VAR_NAME> }
+  - { provider: nous, model: "tencent/hy3:free", context_length: 256000 }
+  - { provider: nous, model: "stepfun/step-3.7-flash:free", context_length: 256000 }
+credential_pool_strategies:
+  anthropic: fill_first
+
+toolsets: [hermes-cli]
+
+# ---- Agent loop / limits ------------------------------------------------------------------------
+agent:
+  max_turns: 60
+  gateway_timeout: 1800
+  gateway_timeout_warning: 900
+  restart_drain_timeout: 180        # seconds the gateway waits for running agents before a restart kills them
+  api_max_retries: 3
+  tool_use_enforcement: true
+  task_completion_guidance: true
+  reasoning_effort: high
+
+# GOTCHA: workdir files (AGENTS.md etc.) are injected into the run's context, truncated here.
+# The career-ops AGENTS.md is ~56k chars, so everything past ~40k is silently lost.
+context_file_max_chars: 40000
+file_read_max_chars: 100000
+tool_output: { max_bytes: 50000, max_lines: 2000, max_line_length: 2000 }
+
+compression:
+  enabled: true
+  threshold: 0.5
+  target_ratio: 0.2
+  protect_last_n: 20
+  protect_first_n: 3
+
+delegation:                         # sub-agents spawned from a run
+  model: opus
+  provider: claude-subscription-directsdk-experimental
+  max_concurrent_children: 10
+  max_spawn_depth: 1
+  child_timeout_seconds: 600
+
+terminal:
+  backend: local                    # commands run directly on the server, no container
+  timeout: 180
+  persistent_shell: true
+  lifetime_seconds: 300
+
+skills:
+  external_dirs: ["~/.agents/skills"]
+curator: { enabled: true, interval_hours: 168, stale_after_days: 14, archive_after_days: 30 }
+
+# ---- Approvals: unattended by design -------------------------------------------------------------
+approvals:
+  mode: 'off'                       # no interactive command approval prompts
+  cron_mode: deny                   # ...but anything that WOULD need approval is denied inside cron runs
+  mcp_reload_confirm: true
+  destructive_slash_confirm: true
+security:
+  allow_private_urls: false
+  redact_secrets: true              # secrets are redacted from logs/output even with approvals off
+cron:
+  wrap_response: true               # cron delivery wrapping on (Hermes decorates delivered cron text)
+
+# ---- Web search (free): TinyFish; paid TinyFish features hard-denied -----------------------------
+web: { backend: tinyfish, search_backend: tinyfish, extract_backend: tinyfish }
+tinyfish:
+  credit_policy: { browser: deny, agent: deny }
+
+# ---- Chat platforms ---------------------------------------------------------------------------
+# Slack runs over Socket Mode; tokens come from ~/.hermes/.env (SLACK_BOT_TOKEN = the bot token,
+# SLACK_APP_TOKEN = the app-level token, SLACK_ALLOWED_USERS = comma list of user ids). Telegram: TELEGRAM_BOT_TOKEN, TELEGRAM_ALLOWED_USERS,
+# TELEGRAM_HOME_CHANNEL. None of those values are in config.yaml.
+slack:
+  require_mention: true             # in channels the bot only answers when @mentioned
+  free_response_channels: ''
+  allowed_channels: <SLACK_CHANNEL_ID>,<SLACK_CHANNEL_ID>,<SLACK_CHANNEL_ID>   # includes the cron-delivery channel
+  ignore_other_user_mentions: true
+telegram:
+  reactions: false
+  allowed_chats: ''                 # access control is by TELEGRAM_ALLOWED_USERS in .env
+
+platform_toolsets:                  # what a Slack-originated agent turn can use (cron jobs set their own enabled_toolsets)
+  slack: [a2a, browser, clarify, code_execution, connections, context_engine, cronjob, delegation, file,
+          image_gen, kanban, memory, session_search, skills, terminal, todo, vision, web, x_search, tinyfish]
+
+# ---- MCP servers the job-search flow uses ----------------------------------------------------
+mcp_servers:
+  linkedin:                         # the self-hosted Unipile-backed server staged in ../linkedin-mcp
+    url: https://linkedin.<YOUR_DOMAIN>/mcp
+    headers: { Authorization: "<AUTH_HEADER_VALUE>" }   # scheme + connector token
+    enabled: true
+    timeout: 180
+    connect_timeout: 60
+  tsenta:                           # hosted auto-apply service (paid credits)
+    url: https://api.<TSENTA_HOST>/api/v1/mcp
+    auth: <TOKEN>
+    enabled: true
+  # other MCP servers on the box (health, finance, memory, infra, excalidraw...) are not part of this workflow
+
+plugins:
+  enabled:
+    - claude-subscription-directsdk-experimental   # the Claude-subscription model provider (see README)
+    - tinyfish
+    - dashboard_auth/basic
+    # (device/voice/home-automation plugins omitted)
+
+gateway:
+  strict: false
+  multiplex_profiles: true
+updates:
+  pre_update_backup: false          # the nightly updater passes --backup itself
+  backup_keep: 5
+  non_interactive_local_changes: stash
+kanban:
+  dispatch_in_gateway: true
+  dispatch_interval_seconds: 60
+sessions: { auto_prune: false, retention_days: 90 }
+timezone: ''                        # empty = server's local timezone (<YOUR_TZ>); cron expressions are evaluated in it

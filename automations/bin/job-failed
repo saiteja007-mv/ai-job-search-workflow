@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# job-failed <unit> -- systemd OnFailure= hook for every timer-driven job.
+# Posts the failed unit's last 20 journal lines to Slack via `hermes send`.
+#   - skipped when run-job already alerted (its own non-zero exit path); a
+#     timeout/signal kill takes run-job down too, so those still alert here
+#   - at most one alert per unit per hour (requests-status fires every minute)
+set -u
+unit=$1
+target=${JOB_FAILED_TARGET:-slack:<SLACK_CHANNEL_ID>}
+result=$(systemctl --user show "$unit" -p Result --value)
+exec_start=$(systemctl --user show "$unit" -p ExecStart --value)
+case "$exec_start" in *run-job*) [ "$result" = "exit-code" ] && exit 0 ;; esac
+stamp=/home/<YOU>/.cache/job-failed/$(systemd-escape "$unit")
+if [ -f "$stamp" ] && [ $(( $(date +%s) - $(stat -c %Y "$stamp") )) -lt 3600 ]; then exit 0; fi
+touch "$stamp"
+# ponytail: same bounded secret scrub as run-job, not a real secret scanner.
+journalctl --user -u "$unit" -n 20 --no-pager -o cat 2>/dev/null | sed -E \
+  -e 's/Bearer[[:space:]]+[^[:space:]]+/Bearer [REDACTED]/gI' \
+  -e 's/([Tt]oken=)[^[:space:]&]+/\1[REDACTED]/g' \
+  -e 's/(Authorization:?[[:space:]]*)[^[:space:]]+/\1[REDACTED]/gI' \
+  -e 's/(X-API-KEY:?[[:space:]]*)[^[:space:]]+/\1[REDACTED]/gI' \
+  | tail -n 20 | if [ "${RUN_JOB_SENDER:-hermes}" = "notify" ]; then
+      "$(dirname "$0")/notify" -t "$target" -s "❌ ${unit} failed (${result}) on <HOME_SERVER>"
+    else
+      hermes send -t "$target" -s "❌ ${unit} failed (${result}) on <HOME_SERVER>" -f -
+    fi

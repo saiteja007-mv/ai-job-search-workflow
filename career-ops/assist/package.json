@@ -1,0 +1,15 @@
+{
+  "name": "career-ops-assist",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Hybrid-RAG career copilot: local BM25 over career-ops + live web/LinkedIn/ATS, exposed as HTTP and MCP.",
+  "scripts": {
+    "start": "node assist-server.mjs",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^3.23.8"
+  }
+}

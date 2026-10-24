@@ -1,0 +1,33 @@
+{
+  "_comment": [
+    "Deterministic claim filters for the assist service (verify.mjs / grounding.mjs). Placeholder version.",
+    "",
+    "This file is DATA, not code, so the list can be corrected without touching the filter.",
+    "Put in `neverClaim` every tool/skill/language the candidate genuinely does NOT have, plus terms the CV backs only partially.",
+    "A draft that contains a term here is rejected, not warned: suppressing a true claim is recoverable, asserting a false one to an employer is not.",
+    "",
+    "UNRESOLVED-CONFLICT PATTERN worth copying: when the source docs disagree (the CV digest maps skill X to a job, but the design spec lists X as",
+    "NEVER-CLAIM), the spec wins and the term stays banned until the user rules. Record the conflict here in the _comment so nobody 'fixes' either side.",
+    "",
+    "'caseSensitive' exists for short words that are also ordinary English: 'Go' the language vs 'go' the verb. Matching it case-insensitively",
+    "would flag every honest sentence containing the word. 'requireContext' narrows a term to sentences that also contain one of the listed words."
+  ],
+  "neverClaim": [
+    { "term": "<LANGUAGE_YOU_DO_NOT_USE>", "caseSensitive": true, "note": "a past JD required it; the CV has none" },
+    { "term": "<AMBIGUOUS_SHORT_WORD>", "caseSensitive": true,
+      "requireContext": ["language", "wrote", "built", "experience", "developed", "proficient"],
+      "note": "ambiguous with an English word; only flag when a skill-claim word is in the same sentence" },
+    { "term": "<TOOL_YOU_HAVE_NOT_USED>", "caseSensitive": false },
+    { "term": "<TECHNIQUE_THE_CV_ONLY_PARTLY_BACKS>", "caseSensitive": false, "note": "see _comment: unresolved source conflict" }
+  ],
+  "_mergeComment": [
+    "'The three facts that must never merge'. A draft that merges them is REJECTED, not warned:",
+    "these are the fabrications that read most plausibly to a recruiter.",
+    "A violation fires when terms from two different groups appear in the SAME SENTENCE."
+  ],
+  "neverMerge": [
+    { "name": "<GROUP_A>", "terms": ["<terms from fact A>"] },
+    { "name": "<GROUP_B>", "terms": ["<terms from fact B>"] },
+    { "name": "<GROUP_C>", "terms": ["<terms from fact C>"] }
+  ]
+}

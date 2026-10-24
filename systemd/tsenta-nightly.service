@@ -1,0 +1,21 @@
+# /home/<YOU>/.config/systemd/user/tsenta-nightly.service
+[Unit]
+Description=Tsenta nightly quota-balancing success-loop + LinkedIn outreach
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/<YOU>/automations/jobs/tsenta-nightly
+Environment=PATH=/home/<YOU>/.local/bin:/home/<YOU>/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ExecStart=/home/<YOU>/automations/bin/run-job tsenta-nightly slack:<SLACK_CHANNEL_ID> -- /home/<YOU>/automations/jobs/tsenta-nightly/run.sh
+# 9h: apply-loop deadline (TSENTA_MAX_RUNTIME_MIN, default 420min=7h) +
+# Unipile outreach subprocess timeout (3600s=1h) leaves 0 slack at 8h for
+# MCP discovery retries, the initial full-history pagination, dashboard
+# mirroring, and writing the report -- raised to leave ~1h margin.
+TimeoutStartSec=9h
+Nice=10
+
+# /home/<YOU>/.config/systemd/user/tsenta-nightly.service.d/10-poller.conf
+[Unit]
+OnFailure=job-failed@tsenta\x2dnightly.service.service

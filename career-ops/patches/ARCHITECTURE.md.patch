@@ -1,0 +1,15 @@
+diff --git a/ARCHITECTURE.md b/ARCHITECTURE.md
+index 3996104d..c614d02e 100644
+--- a/ARCHITECTURE.md
++++ b/ARCHITECTURE.md
+@@ -54,6 +54,10 @@ AI coding CLI  ─┐
+ ### Discovery — `scan.mjs` + `providers/`
+ Finds jobs from **open, no-auth public sources**. `scan.mjs` is zero-token: it calls public ATS APIs (Greenhouse, Ashby, Lever, BambooHR, Teamtailor, Workday, Breezy) and RSS/JSON boards via per-board modules in `providers/`. Auth-gated/login-required sources are intentionally out of core (they belong in the plugin layer). Results land in `data/pipeline.md`.
+ 
++### First-pass screen — `typesafe-screen.mjs` (optional, off by default)
++
++Between the JobSpy sweep and Evaluation. One TypeSafe System One request per posting answers the hard-rule questions the evaluator would otherwise spend a full agent run discovering — senior tier, U.S.-Person / clearance / citizenship gate, staffing agency or government employer, non-US location, PhD gate, unreadable JD — plus a `role_fit` Score that only orders the shortlist. Policy is code (`lib/typesafe-screen.mjs`): a Choice rejects only at confidence >= 0.6, sponsorship language never rejects (standing override, `modes/_profile.md`), and any transport failure passes the posting through. Enable with `screen.typesafe.enabled` in `config/profile.yml` plus `TYPESAFE_API_KEY` in `.env`. `node typesafe-screen.mjs --golden` replays `jds/` against `reports/` and exits non-zero if any >= 4.0 report would have been rejected.
++
+ ### Evaluation — `modes/oferta.md` + `modes/_shared.md`
+ The heart of the tool. `oferta.md` defines the A–H evaluation blocks (H is conditional, on scores of 4.5 and above); `_shared.md` defines the 1–5 scoring system, archetype detection, posting-legitimacy signals, and global rules. The AI reads these plus your `cv.md` and produces a structured report.
+ 

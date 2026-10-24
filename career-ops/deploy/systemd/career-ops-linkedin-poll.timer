@@ -1,0 +1,18 @@
+[Unit]
+Description=Poll LinkedIn for acceptances and replies every 5 minutes
+
+[Timer]
+# 5 min (was 20) — set 2026-09-14 on <YOUR_NAME>'s request for faster replies. A quiet poll is
+# 2 Unipile list calls and finishes in 1-2s; only chats with activity since the watermark cost
+# extra calls, so the floor is ~576 list calls/day vs ~144 at 20 min. Runs cannot overlap:
+# systemd will not start a second copy of a running oneshot unit, and the longest observed run
+# is ~28s against a 600s TimeoutStartSec.
+# RandomizedDelay keeps the call pattern from looking like a metronome; kept proportionate to
+# the shorter interval (45s, not the old 180s, which would have stretched 5 min out to 8).
+OnBootSec=2min
+OnUnitActiveSec=5min
+Persistent=true
+RandomizedDelaySec=45
+
+[Install]
+WantedBy=timers.target

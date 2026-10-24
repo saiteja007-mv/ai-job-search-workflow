@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="{{LANG}}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{NAME}} — CV</title>
+<style>
+  /*
+   * "classic" template — maximally ATS-safe single-column resume.
+   * No web fonts (Georgia/Arial only), no color, no backgrounds, no gradients,
+   * no multi-column layout. Reuses the SAME {{placeholders}} and CSS class names
+   * as cv-template.html so scripts/build-tailored-cv.mjs drives it unchanged.
+   * Best for strict ATS parsers and conservative corporate portals.
+   */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 10.5pt;
+    line-height: 1.4;
+    color: #000000;
+    background: #ffffff;
+  }
+
+  .page {
+    width: 100%;
+    max-width: {{PAGE_WIDTH}};
+    margin: 0 auto;
+    padding: 0;
+  }
+
+  /* === HEADER === */
+  .header {
+    text-align: center;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #000000;
+  }
+
+  .header h1 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 20pt;
+    font-weight: 700;
+    color: #000000;
+    letter-spacing: 0.02em;
+    margin-bottom: 4px;
+  }
+
+  .header-gradient { display: none; }
+
+  .contact-row {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 9.5pt;
+    color: #000000;
+    line-height: 1.5;
+  }
+
+  .contact-row a {
+    color: #000000;
+    text-decoration: none;
+  }
+
+  .contact-row .separator {
+    color: #000000;
+    margin: 0 4px;
+  }
+
+  /* === SECTIONS === */
+  .section {
+    margin-bottom: 12px;
+  }
+
+  .section-title {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #000000;
+    border-bottom: 1px solid #000000;
+    padding-bottom: 2px;
+    margin-bottom: 7px;
+  }
+
+  /* === PROFESSIONAL SUMMARY === */
+  .summary-text {
+    font-size: 10.5pt;
+    line-height: 1.5;
+    color: #000000;
+  }
+
+  a { white-space: nowrap; }
+
+  /* === CORE COMPETENCIES (rendered as a plain inline list, no chips) === */
+  .competencies-grid {
+    line-height: 1.6;
+  }
+
+  .competency-tag {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10pt;
+    color: #000000;
+    background: none;
+    border: none;
+    padding: 0;
+  }
+
+  .competency-tag:not(:last-child)::after {
+    content: " \2022 ";
+    color: #000000;
+  }
+
+  /* === WORK EXPERIENCE === */
+  .job {
+    margin-bottom: 10px;
+  }
+
+  .job-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .job-company {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 11pt;
+    font-weight: 700;
+    color: #000000;
+  }
+
+  .job-period {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 9.5pt;
+    color: #000000;
+    white-space: nowrap;
+  }
+
+  .job-role {
+    font-size: 10.5pt;
+    font-style: italic;
+    font-weight: 400;
+    color: #000000;
+    margin-bottom: 3px;
+  }
+
+  .job-location {
+    font-size: 9.5pt;
+    font-style: italic;
+    color: #000000;
+  }
+
+  .job ul {
+    padding-left: 18px;
+    margin-top: 3px;
+  }
+
+  .job li {
+    font-size: 10pt;
+    line-height: 1.45;
+    color: #000000;
+    margin-bottom: 2px;
+  }
+
+  .job li strong { font-weight: 700; }
+
+  /* === PROJECTS === */
+  .project {
+    margin-bottom: 9px;
+  }
+
+  .project-title {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 10.5pt;
+    font-weight: 700;
+    color: #000000;
+  }
+
+  .project ul {
+    padding-left: 18px;
+    margin-top: 3px;
+  }
+
+  .project li {
+    font-size: 10pt;
+    line-height: 1.45;
+    color: #000000;
+    margin-bottom: 2px;
+  }
+
+  /* === EDUCATION === */
+  .edu-item { margin-bottom: 6px; }
+
+  .edu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .edu-title {
+    font-weight: 700;
+    font-size: 10.5pt;
+    color: #000000;
+  }
+
+  .edu-org {
+    font-weight: 400;
+    color: #000000;
+  }
+
+  .edu-year {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 9.5pt;
+    color: #000000;
+    white-space: nowrap;
+  }
+
+  .edu-desc {
+    font-size: 10pt;
+    color: #000000;
+    margin-top: 1px;
+    line-height: 1.4;
+  }
+
+  /* === CERTIFICATIONS === */
+  .cert-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(90px, max-content) 44px;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+
+  .cert-title {
+    font-size: 10pt;
+    color: #000000;
+    min-width: 0;
+  }
+
+  .cert-org {
+    color: #000000;
+    white-space: nowrap;
+  }
+
+  .cert-year {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 9.5pt;
+    color: #000000;
+    white-space: nowrap;
+    text-align: right;
+  }
+
+  /* === SKILLS === */
+  .skills-grid { line-height: 1.5; }
+
+  .skill-item {
+    font-size: 10pt;
+    color: #000000;
+    margin-bottom: 2px;
+  }
+
+  .skill-category {
+    font-weight: 700;
+    color: #000000;
+    font-size: 10pt;
+  }
+
+  /* === PRINT / PAGE BREAK === */
+  @media print {
+    .page { padding: 0; }
+  }
+
+  .avoid-break,
+  .job,
+  .project,
+  .edu-item,
+  .cert-item {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header avoid-break">
+    <h1>{{NAME}}</h1>
+    <div class="header-gradient"></div>
+    <div class="contact-row">
+      <span>{{PHONE}}</span>
+      <span class="separator">|</span>
+      <span>{{EMAIL}}</span>
+      <span class="separator">|</span>
+      <a href="{{LINKEDIN_URL}}">{{LINKEDIN_DISPLAY}}</a>
+      <span class="separator">|</span>
+      <a href="{{PORTFOLIO_URL}}">{{PORTFOLIO_DISPLAY}}</a>
+      <span class="separator">|</span>
+      <span>{{LOCATION}}</span>
+    </div>
+  </div>
+
+  <!-- PROFESSIONAL SUMMARY -->
+  <div class="section avoid-break">
+    <div class="section-title">{{SECTION_SUMMARY}}</div>
+    <div class="summary-text">{{SUMMARY_TEXT}}</div>
+  </div>
+
+  <!-- CORE COMPETENCIES -->
+  <div class="section">
+    <div class="section-title">{{SECTION_COMPETENCIES}}</div>
+    <div class="competencies-grid">
+      {{COMPETENCIES}}
+    </div>
+  </div>
+
+  <!-- WORK EXPERIENCE -->
+  <div class="section">
+    <div class="section-title">{{SECTION_EXPERIENCE}}</div>
+    {{EXPERIENCE}}
+  </div>
+
+  <!-- PROJECTS -->
+  <div class="section avoid-break">
+    <div class="section-title">{{SECTION_PROJECTS}}</div>
+    {{PROJECTS}}
+  </div>
+
+  <!-- EDUCATION -->
+  <div class="section avoid-break">
+    <div class="section-title">{{SECTION_EDUCATION}}</div>
+    {{EDUCATION}}
+  </div>
+
+  <!-- CERTIFICATIONS -->
+  <div class="section avoid-break">
+    <div class="section-title">{{SECTION_CERTIFICATIONS}}</div>
+    {{CERTIFICATIONS}}
+  </div>
+
+  <!-- SKILLS -->
+  <div class="section avoid-break">
+    <div class="section-title">{{SECTION_SKILLS}}</div>
+    {{SKILLS}}
+  </div>
+
+</div>
+</body>
+</html>

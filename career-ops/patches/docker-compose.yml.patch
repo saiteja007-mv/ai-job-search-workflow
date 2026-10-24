@@ -1,0 +1,12 @@
+diff --git a/docker-compose.yml b/docker-compose.yml
+index 137b1db1..96ab1720 100644
+--- a/docker-compose.yml
++++ b/docker-compose.yml
+@@ -22,6 +22,7 @@ services:
+       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
++      - TYPESAFE_API_KEY=${TYPESAFE_API_KEY:-}
+     # Chromium needs a larger /dev/shm than the default 64M.
+     shm_size: "1gb"
+     # Dashboard TUI is interactive; expose nothing by default but allow `-it`.

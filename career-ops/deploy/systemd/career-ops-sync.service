@@ -1,0 +1,11 @@
+[Unit]
+Description=career-ops Agency Gmail sync (gog)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=__REPO__
+EnvironmentFile=__REPO__/deploy/.env
+ExecStart=/usr/bin/env bash __REPO__/deploy/sync-run.sh
+TimeoutStartSec=900

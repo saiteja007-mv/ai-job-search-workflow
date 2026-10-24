@@ -1,0 +1,42 @@
+#!/usr/bin/env python3
+"""pollers -- one-screen status of every scheduled job on this machine:
+systemd user timers (last result, last run, next run) and Hermes crons."""
+import json, re, subprocess
+from datetime import datetime
+
+SKIP = ('launchpadlib', 'snap.')
+
+def sc(*args):
+    return subprocess.run(['systemctl', '--user', *args], capture_output=True, text=True).stdout
+
+def ts(usec):
+    return datetime.fromtimestamp(usec / 1e6).strftime('%Y-%m-%d %H:%M') if usec else '-'
+
+rows = []
+for t in json.loads(sc('list-timers', '--all', '--output=json') or '[]'):
+    unit = t['unit']
+    if any(k in unit for k in SKIP):
+        continue
+    svc = t.get('activates') or unit.replace('.timer', '.service')
+    res = sc('show', svc, '-p', 'Result', '--value').strip() or '-'
+    rows.append((unit[:-6], 'ok' if res == 'success' else res, ts(t.get('last')), ts(t.get('next'))))
+
+print(f"{'UNIT':32} {'RESULT':9} {'LAST':17} NEXT")
+for r in sorted(rows):
+    print(f'{r[0]:32} {r[1]:9} {r[2]:17} {r[3]}')
+
+print('\nHermes crons:')
+cur = {}
+for line in subprocess.run(['hermes', 'cron', 'list'], capture_output=True, text=True).stdout.splitlines():
+    m = re.match(r'\s+([0-9a-f]{12}) \[(\w+)\]', line)
+    if m:
+        cur = {'id': m.group(1), 'state': m.group(2)}
+    elif 'Name:' in line:
+        cur['name'] = line.split('Name:', 1)[1].strip()
+    elif 'Schedule:' in line:
+        cur['sched'] = line.split('Schedule:', 1)[1].strip()
+    elif 'Last run:' in line and cur:
+        last = line.split('Last run:', 1)[1].strip()
+        ok = last.endswith(' ok')
+        print(f"  {cur['id']}  {cur['state']:8} {cur.get('sched',''):18} {cur.get('name','')[:44]:44} "
+              f"{'ok' if ok else 'FAIL'} {last[:16]}")

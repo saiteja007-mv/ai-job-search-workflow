@@ -1,0 +1,11 @@
+# /home/<YOU>/.config/systemd/user/nightly-hermes-gateway-restart.timer
+[Unit]
+Description=Restart Hermes gateway after nightly update while <YOUR_NAME> is likely asleep
+
+[Timer]
+OnCalendar=*-*-* 04:20:00
+Persistent=true
+Unit=nightly-hermes-gateway-restart.service
+
+[Install]
+WantedBy=timers.target

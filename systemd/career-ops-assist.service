@@ -1,0 +1,21 @@
+# /home/<YOU>/.config/systemd/user/career-ops-assist.service
+[Unit]
+# Tracked into the repo 2026-09-04. This unit was live on the <HOME_SERVER> for 3+ days but existed
+# ONLY at ~/.config/systemd/user/career-ops-assist.service — running fine, and unreproducible
+# on any other box. A service nothing in the repo describes is one rebuild away from gone.
+Description=career-ops assist service (read-only context for the LinkedIn Copilot extension, scoutco.<YOUR_DOMAIN>)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/<YOU>/career-ops/assist
+Environment=NODE_ENV=production
+# Binds 127.0.0.1:42836 by default. NEVER bind 0.0.0.0 here: cloudflared reaches it locally,
+# and the dashboard on :5050 is the standing example of what a wide bind costs.
+ExecStart=/usr/bin/env node assist-server.mjs
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

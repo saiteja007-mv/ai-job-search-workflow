@@ -1,0 +1,14 @@
+diff --git a/package.json b/package.json
+index d2a8d237..fc34e56d 100644
+--- a/package.json
++++ b/package.json
+@@ -70,7 +70,8 @@
+     "build:dashboard": "node build-dashboard.mjs",
+     "serve:dashboard": "cd dashboard && go run .",
+     "postinstall": "npx playwright install chromium || npx playwright install chromium",
+-    "manifesto": "node manifesto.mjs"
++    "manifesto": "node manifesto.mjs",
++    "screen": "node typesafe-screen.mjs"
+   },
+   "keywords": [
+     "ai",

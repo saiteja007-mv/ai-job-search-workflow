@@ -1,0 +1,14 @@
+# /home/<YOU>/.config/systemd/user/nightly-hermes-gateway-restart.service
+[Unit]
+Description=Restart Hermes gateway after nightly update window
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/systemctl --user restart hermes-gateway.service
+
+# /home/<YOU>/.config/systemd/user/nightly-hermes-gateway-restart.service.d/10-poller.conf
+[Unit]
+OnFailure=job-failed@nightly\x2dhermes\x2dgateway\x2drestart.service.service
+
+[Service]
+TimeoutStartSec=5min

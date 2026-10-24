@@ -1,0 +1,11 @@
+[Unit]
+Description=Run career-ops Gmail (Agency) sync several times a day
+
+[Timer]
+# 07,10,13,16,19 local. Quick incremental merge each time.
+OnCalendar=*-*-* 07,10,13,16,19:00:00
+Persistent=true
+RandomizedDelaySec=120
+
+[Install]
+WantedBy=timers.target

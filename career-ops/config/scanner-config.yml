@@ -1,0 +1,93 @@
+# Shared scanner config -- used by jobspy-scan.py, scan-filter.mjs, and future scanners.
+# Single source of truth for title/company filters. (Originally written for a Data-Analyst-era search and kept as the
+# structure reference; swap the positive titles for your target role. The excluded_companies list is emptied here.)
+
+# Title regex (case-insensitive)
+title_filter:
+  positive:
+    - "<TARGET_TITLE_1>"
+    - "<TARGET_TITLE_2>"
+    - "<TARGET_TITLE_3>"
+  negative:
+    - "Senior"
+    - "Sr\\."
+    - " II\\b"
+    - " III\\b"
+    - " IV\\b"
+    - " V\\b"
+    - "Lead"
+    - "Staff"
+    - "Principal"
+    - "Manager"
+    - "Director"
+    - "Head of"
+    - " VP\\b"
+    - "Architect"
+    - "\\.NET"
+    - "Java "
+    - "iOS"
+    - "Android"
+    - "Embedded"
+    - "Firmware"
+    - "Mainframe"
+    - "COBOL"
+    - "Salesforce Admin"
+    - "SAP "
+    - "Blockchain"
+    - "Crypto"
+    - "Web3"
+
+# JD body regex -- flag visa-blocked roles
+visa_blockers:
+  - "not eligible for (visa |work )?sponsorship"
+  - "sponsorship\\s+is\\s+not\\s+(?:available|offered|provided)"
+  - "do\\s+not\\s+require\\s+(?:visa\\s+)?sponsorship"
+  - "cannot\\s+(?:offer|provide)\\s+(?:visa\\s+)?sponsorship"
+  - "unable\\s+to\\s+(?:offer|provide|support)\\s+(?:visa\\s+)?sponsor"
+  - "no\\s+(?:future|current)?\\s*(?:visa\\s+)?sponsorship"
+  - "indefinite(?:ly)?\\s+(?:authorized|work\\s+authoriz)"
+  - "permanent\\s+work\\s+auth"
+  - "must\\s+be\\s+(?:a\\s+)?US\\s+citizen"
+  - "US\\s+citizenship\\s+(?:required|is\\s+required)"
+  - "security\\s+clearance"
+  - "ITAR"
+  - "export[ -]controlled"
+  - "SkillBridge"
+  - "\\(m/f/d\\)"
+  - "\\(m/w/d\\)"
+  - "\\(h/f\\)"
+  # NOTE: since 2026-10-02 plain "no sponsorship" is a ranking signal, not a reject (see modes/_profile.md);
+  # this legacy list is only used by the old analyst-era scanner. The live gates are in config/profile.yml pipeline_filter.
+
+# Companies already in tracker -- skip during scans. Maintained as a list; add after merge-tracker runs.
+excluded_companies:
+  - <TARGET_COMPANY>    # one entry per company already evaluated/applied; grouped by sector in the working file
+
+# Search parameters
+search:
+  terms:
+    - "<search term 1>"
+    - "<search term 2>"
+  locations:
+    - "United States"
+  remote_only: true
+  results_per_term: 30
+  hours_old: 168    # only postings from last 7 days
+
+# Geographic policy -- strict US-only
+# Scanners should:
+#   1. Reject any posting with non-US country tokens in location OR JD body
+#   2. Accept only postings with positive US signal: "United States", "USA", "Remote US", a US state name/code,
+#      or "Remote" with no other country mentioned
+#   3. Default to REJECT when ambiguous (empty/unclear) -- safer than including non-US
+geo_policy:
+  enforce: us_only
+  positive_signals: ["united states", "usa", "us remote", "remote us", "remote, us", "remote - us", "anywhere in the us"]
+  negative_country_tokens:
+    # Triggers IMMEDIATE rejection regardless of a "Remote" claim
+    [canada, india, united kingdom, germany, france, spain, italy, netherlands, ireland, poland, romania, sweden, norway,
+     denmark, finland, switzerland, austria, belgium, portugal, estonia, japan, singapore, australia, new zealand, brazil,
+     argentina, mexico, colombia, tel aviv, israel, philippines, thailand, vietnam, south korea, china, hong kong, taiwan,
+     turkey, south africa, egypt, kenya, nigeria, russia, ukraine, uae, dubai]
+  ambiguous_resolution: reject  # if no positive US signal AND no negative token, reject
+  fallback: reject              # empty location string -> reject

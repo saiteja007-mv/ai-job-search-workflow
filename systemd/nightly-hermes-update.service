@@ -1,0 +1,15 @@
+# /home/<YOU>/.config/systemd/user/nightly-hermes-update.service
+[Unit]
+Description=Nightly Hermes auto-update
+Documentation=https://hermes-agent.nousresearch.com/docs/
+
+[Service]
+Type=oneshot
+ExecStart=/home/<YOU>/.hermes/scripts/nightly-hermes-update.sh
+
+# /home/<YOU>/.config/systemd/user/nightly-hermes-update.service.d/10-poller.conf
+[Unit]
+OnFailure=job-failed@nightly\x2dhermes\x2dupdate.service.service
+
+[Service]
+TimeoutStartSec=1h

@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "LinkedIn Copilot (career-ops)",
+  "version": "0.1.0",
+  "description": "Draft grounded application answers and LinkedIn replies from your career-ops data. Draft-only: never fills, never sends.",
+  "permissions": [
+    "sidePanel",
+    "storage",
+    "activeTab",
+    "scripting",
+    "alarms"
+  ],
+  "host_permissions": [
+    "https://<YOUR_DOMAIN>/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "options_page": "options.html",
+  "action": {
+    "default_title": "LinkedIn Copilot \u2014 badge shows invites left this week"
+  },
+  "icons": {
+    "128": "icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.linkedin.com/*"
+      ],
+      "js": [
+        "content-linkedin.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}

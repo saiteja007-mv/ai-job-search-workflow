@@ -1,0 +1,49 @@
+{
+  "worktree": {
+    "bgIsolation": "none"
+  },
+  "enabledPlugins": {
+    "warm-outbound-engine@superagnt": true,
+    "superagnt@superagnt": true
+  },
+  "extraKnownMarketplaces": {
+    "superagnt": {
+      "source": {
+        "source": "directory",
+        "path": "/home/<SERVER_USER>/pinned-marketplaces/superagnt-plugins"
+      }
+    }
+  },
+  "permissions": {
+    "deny": [
+      "mcp__plugin_superagnt_superagnt",
+      "mcp__plugin_superagnt_superagnt__connection_heyreach_campaign_start",
+      "mcp__plugin_superagnt_superagnt__connection_heyreach_campaign_add_leads_v2",
+      "mcp__plugin_superagnt_superagnt__connection_heyreach_list_add_leads_v2",
+      "mcp__plugin_superagnt_superagnt__connection_heyreach_inbox_send_message",
+      "mcp__plugin_superagnt_superagnt__connection_heyreach_webhook_create",
+      "mcp__plugin_superagnt_superagnt__connection_instantly_activatecampaign",
+      "mcp__plugin_superagnt_superagnt__connection_instantly_bulkaddleads",
+      "mcp__plugin_superagnt_superagnt__connection_instantly_replytoemail",
+      "mcp__plugin_superagnt_superagnt__connection_instantly_createwebhook",
+      "mcp__plugin_superagnt_superagnt__connection_instantly_resumewebhook",
+      "mcp__plugin_superagnt_superagnt__connection_instantly_updateleadintereststatus",
+      "mcp__plugin_superagnt_superagnt__connection_agentmail_send_draft",
+      "mcp__plugin_superagnt_superagnt__connection_agentmail_reply_to_message",
+      "mcp__plugin_superagnt_superagnt__connection_agentmail_create_inbox",
+      "mcp__plugin_superagnt_superagnt__connection_agentmail_create_webhook",
+      "mcp__plugin_superagnt_superagnt__connection_agentmail_create_draft",
+      "mcp__plugin_superagnt_superagnt__agnt_agents_create",
+      "mcp__plugin_superagnt_superagnt__agnt_agents_deploy",
+      "mcp__plugin_superagnt_superagnt__agnt_agents_dispatch",
+      "mcp__plugin_superagnt_superagnt__agnt_agents_session_start",
+      "mcp__plugin_superagnt_superagnt__agnt_agents_update_config",
+      "mcp__plugin_superagnt_superagnt__agnt_schedules_create",
+      "mcp__plugin_superagnt_superagnt__agnt_data_job_create",
+      "mcp__plugin_superagnt_superagnt__agnt_data_job_submit",
+      "mcp__plugin_superagnt_superagnt__agnt_webhooks_create_endpoint",
+      "mcp__plugin_superagnt_superagnt__agnt_webhooks_create_outbound",
+      "mcp__plugin_superagnt_superagnt__agnt_webhooks_send"
+    ]
+  }
+}

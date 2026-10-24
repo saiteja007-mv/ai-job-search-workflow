@@ -1,0 +1,17 @@
+# /home/<YOU>/.config/systemd/user/tsenta-slot@.service
+[Unit]
+Description=Tsenta daytime slot %i (same success-loop as tsenta-nightly)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/<YOU>/automations/jobs/tsenta-nightly
+Environment=PATH=/home/<YOU>/.local/bin:/home/<YOU>/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ExecStart=/home/<YOU>/automations/bin/run-job tsenta-slot-%i slack:<SLACK_CHANNEL_ID> -- /home/<YOU>/automations/jobs/tsenta-nightly/run.sh %i
+TimeoutStartSec=8h
+Nice=10
+
+# /home/<YOU>/.config/systemd/user/tsenta-slot@.service.d/10-poller.conf
+[Unit]
+OnFailure=job-failed@tsenta\x2dslot\x40%i.service.service

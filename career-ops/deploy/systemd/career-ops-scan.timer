@@ -1,0 +1,11 @@
+[Unit]
+Description=Run career-ops scan + evaluate daily
+
+[Timer]
+# Daily at 08:00 local time. Persistent=catch up if the laptop was asleep at fire time.
+OnCalendar=*-*-* 08:00:00
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target

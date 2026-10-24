@@ -1,0 +1,15 @@
+[Unit]
+Description=career-ops Telegram control bot (phone control)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=__REPO__
+EnvironmentFile=__REPO__/deploy/.env
+ExecStart=/usr/bin/env node __REPO__/deploy/telegram-control.mjs
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

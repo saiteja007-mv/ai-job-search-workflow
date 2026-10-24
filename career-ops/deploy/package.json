@@ -1,0 +1,8 @@
+{
+  "name": "career-ops-deploy",
+  "private": true,
+  "description": "Runtime deps for the <HOME_SERVER> LinkedIn poller (deploy/*.mjs). Install with npm install in this directory.",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.134.0"
+  }
+}

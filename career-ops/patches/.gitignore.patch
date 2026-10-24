@@ -1,0 +1,314 @@
+diff --git a/.gitignore b/.gitignore
+index 058d0293..df375e99 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -2,7 +2,44 @@
+ data/applications.md
+ data/pipeline.md
+ data/scan-history.tsv
++data/applied-dates.json
++data/outreach_log.json
++# Third-party personal data — real names, headlines, employers and LinkedIn profile URLs of
++# ~280 recruiters. This repo is public; these must never be committed.
++#
++# The comment above promised this coverage from the start but only listed the CSVs. The two
++# largest third-party-PII files in the repo were never matched by any pattern here, so a
++# `git init` in this directory would have committed ~5 MB of other people's names, headlines
++# and profile URLs on the first commit. Audited and closed 2026-09-18.
++data/linkedin-suggestions*.csv
++data/contacts.json
++data/contacts.bak*
++data/contacts.json.bak*
++data/contact-status.json*
++data/linkedin-invite-followups.jsonl
++data/linkedin-autoreply-log.jsonl
++data/linkedin-post-*.json
++data/linkedin-invite-withdrawals-*.json
++data/outreach_log.bak*
++data/outreach_log.json.bak*
++data/outreach_attempts.json
++data/outreach_pending.json
++data/outreach*queue.json
++# Live credentials and access tokens — the file IS the secret, so never scrub, always exclude.
++assist/data/assist-token.txt
++deploy/dashboard.env
++deploy/logs/
++# Stale pre-refactor copies. These hold older, less-redacted versions of files that have since
++# been scrubbed, so a pattern-based sweep of the live tree does not cover them.
++*.bak
++*.bak-*
++*.pre-*
++*.tmp
++*.orig
++*-backup
++*.v1
+ reports/*.md
++reports/unipile-outreach/
+ !reports/.gitkeep
+ output/*
+ !output/.gitkeep
+@@ -12,6 +49,24 @@ batch/batch-state.tsv
+ batch/batch-input.tsv
+ batch/tracker-additions/*.tsv
+ !batch/tracker-additions/.gitkeep
++
++# Agency mailbox — raw email snapshots, per-message bodies, sender addresses and the
++# derived application table. Third-party PII and >150 MB of mail; this repo is
++# public, so none of it may ever be committed. Scripts here are, deliberately.
++agency-applications/_raw/*
++!agency-applications/_raw/*.mjs
++!agency-applications/_raw/README.md
++
++# Local secrets / API credentials
++.env
++
++# Cowork apply batch — sensitive (password + identity + per-job state)
++batch/cowork-apply-creds.env
++batch/cowork-apply-brief-*.md
++
++batch/cowork-apply-results/
++batch/cowork-apply-screenshots/
++batch/_apply_brief.json
+ jds/*
+ !jds/.gitkeep
+ 
+@@ -35,3 +90,239 @@ node_modules/
+ .claude/settings.local.json
+ .claude/memory/
+ career-dashboard
++
++# Syncthing two-way sync artifacts (local only)
++.stignore
++.stfolder
++.stversions/
++SYNC-SETUP.md
++data/.sync-lock
++RESUME_GENERATING_BEST_PRACTICES.md
++
++# Scanner / liveness / build scratch caches (regenerable — keep out of git & the working tree)
++.cache_*
++.tmp_*
++ProjectsCarrer-Ops*
++tmp-pdf.err
++tmp-pdf.out
++pdfgen.log
++
++# Interview transcripts — verbatim recordings, named third parties, visa/comp detail (public repo)
++interview-prep/transcripts/
++interview-prep/viz/*.mp4
++
++# LinkedIn review queue + poll watermark (user layer, third-party PII)
++data/linkedin-events.jsonl
++deploy/linkedin-poll-state.json
++# Guarded auto-reply dedupe ledger (user layer, third-party PII)
++data/linkedin-autoreply-log.jsonl
++
++# TypeSafe first-pass screen outputs (contain JD text)
++batch/_screened.json
++batch/_screen_golden.json
++
++# Added by career-ops update-system.mjs.
++# System-owned ignore rules that were missing from this file. Your own rules
++# are never modified, reordered or removed: the updater only appends patterns
++# it cannot already find somewhere in this file. Reordering these lines, or
++# moving them elsewhere in the file, is safe and will not bring them back.
++# Deleting or commenting one out is not: they are system-owned, several of
++# them guard files holding personal data, and the next update re-adds any
++# that is no longer present as a live pattern.
++cv.md
++article-digest.md
++local/
++# Everything under data/ is generated or personal at runtime — only .gitkeep
++# placeholders are tracked (verify with `git ls-files data/`). A blanket rule
++# means a new generated file (e.g. a future log/cache addition) is covered
++# for every user automatically, with no per-filename .gitignore update needed.
++# Match the root entry itself as well as its contents: the user data root may
++# be a symlink to storage outside the checkout, which child globs cannot reach.
++/data
++data/*
++!data/.gitkeep
++!data/offers/
++!data/parser-output/
++# Received offers/contracts, promise notes, prep reports (PII — never commit)
++data/offers/*   
++!data/offers/.gitkeep
++data/parser-output/**
++!data/parser-output/**/
++!data/parser-output/.gitkeep
++!data/parser-output/**/.gitkeep
++# Single-level glob above misses subdirectories (e.g. reports/superseded/).
++# Kept alongside it rather than replacing it, so update-system.mjs does not
++# re-append the original pattern as "missing".
++reports/**/*.md
++!reports/.gitkeep
++/output
++!output/.gitkeep
++# batch/ holds generated worker output. Ignore the directory and allowlist the
++# tracked scaffolding, so a filename a future generator picks is covered by
++# default. AGENTS.md already states the intent this way: "Batch in batch/
++# (gitignored except scripts and prompt)". Enumerating the outputs instead only
++# covers the names that existed when the list was written, which left
++# batch/cv-*.json and batch/cover-*.json stageable, and those carry the
++# candidate's CV content.
++batch/*
++!batch/README.md
++!batch/aggregate-tokens.mjs
++!batch/batch-prompt.md
++!batch/batch-runner.sh
++# No trailing slash, so git descends into the two keeper directories. A slashed
++# pattern matches only a real directory and would miss a symlink.
++!batch/logs
++!batch/tracker-additions
++# tracker-additions never had a blanket child rule, only the **/*.tsv one below,
++# so a non-.tsv file dropped straight into it was stageable. The .gitkeep
++# negations further down still win over this on an already-updated install, not
++# only in a fresh clone: reconcileGitignore() re-emits a negation the install
++# already has after the patterns it appends, which is what #4142 added.
++batch/tracker-additions/*
++!batch/logs/.gitkeep
++batch/batch-state-recovery.d/
++batch/tracker-additions/**/*.tsv
++!batch/tracker-additions/.gitkeep
++# Worker scratch: prefetched JD text plus whatever compile cache the worker CLI
++# drops here. Fetched postings are user data — never stage them.
++batch/tmp/
++/jds
++!jds/.gitkeep
++# Personal documents — never commit scans or copies of these (PII).
++# Catches common identity/credential filenames so they can't be staged by accident.
++*passport*
++*diploma*
++*简历*
++*学位*
++*成绩单*
++# Interview prep (accumulated STAR+R stories — user data)
++interview-prep/*
++!interview-prep/
++!interview-prep/.gitkeep
++# Session transcripts hold real interviewer names/companies — ignore content,
++# ship only the system-owned scaffold (README + .gitkeep). #1242
++!interview-prep/sessions/
++interview-prep/sessions/*
++!interview-prep/sessions/.gitkeep
++!interview-prep/sessions/README.md
++# Writing samples (user's personal files — never committed)
++writing-samples/*
++!writing-samples/README.md
++config/cv-facts.json
++config/benchmarks.yml
++# Fork-local path declarations — this checkout's own files, read by
++# update-system.mjs. Gitignored on purpose: it describes THIS clone, not the
++# project, and must survive the sync that overwrites update-system.mjs (#2421).
++config/local-paths.txt
++modes/_custom.md
++modes/_brief.md
++voice-dna.md
++.manifesto-noted
++# Plugin layer — opt-in toggles + user-installed plugins + integrity lock (never auto-updated)
++config/plugins.yml
++plugins.local/
++plugins.lock
++# Universal safety net — protects ALL checkouts/branches, incl. untracked subprojects
++# (e.g. web/ before it graduates to main). Never commit local env files or TS build caches.
++**/.env.local
++**/.env*.local
++**/*.tsbuildinfo
++node_modules
++bun.lock
++# Working copy the test suite makes under the repo root (test-all.mjs
++# `mkdtempSync(join(ROOT, '.tmp-script-test-'))`). A clean run deletes it; a
++# run interrupted mid-way leaves ~650MB of duplicated repo behind, which a
++# reflexive `git add .` would then stage as ~1000 new files.
++.tmp-script-test-*/
++# Report-number reservation sentinels (ephemeral, created by reserve-report-num.mjs)
++reports/*-RESERVED.md
++# Backup files. Two shapes exist: `{file}.bak` (normalize-statuses.mjs,
++# dedup-tracker.mjs, tracker.mjs) and `{file}.bak-{ISO timestamp}`
++# (web/src/lib/core/safe-write.ts). A plain `*.bak` glob misses the timestamped
++# form, which for cv.md or portals.yml leaves a file holding the same PII as the
++# original sitting untracked in the repo root. Trailing `*` covers both.
++*.bak*
++# Atomic-write temp files, the sibling of the backups above and from the same
++# two writers: `.{name}.{pid}.{ts}.{uuid}.tmp` (tracker-utils.mjs
++# writeFileAtomic, web/src/lib/core/safe-write.ts atomicWrite). They exist only
++# between the write and the rename — but a rename that throws (Windows
++# destination-handle contention, ENOSPC, a read-only mount) leaves one behind
++# holding a byte-for-byte copy of cv.md / profile.yml / portals.yml, under a
++# name the `*.bak*` rule does not match. Same PII, same reflexive `git add .`.
++*.tmp*
++# The tracker and its follow-ups file in the LEGACY ROOT LAYOUT. resolveTrackerPath()
++# documents its own fallback chain — CAREER_OPS_TRACKER > <root>/data/applications.md
++# > <root>/applications.md — and that third entry is a supported install shape, not a
++# mistake. data/ is covered by the blanket rule at the top of this file; the root
++# spelling was not covered by anything.
++# The content is the user's whole job search: company, role, score, status, notes.
++# cv.md, portals.yml, article-digest.md and voice-dna.md are all ignored at the root
++# already, and #3469 ignores the derived .db index on the argument that it "holds the
++# same PII as the tracker" — while the tracker itself sat beside it, unignored.
++# Unanchored, like the .db rule below and for the same reason: getCareerOpsRoot()
++# resolves a relative CAREER_OPS_ROOT (or .career-ops-data marker) against the
++# codebase directory, so a data root configured as `career-data` puts these inside
++# the checkout, where an anchored rule would not reach them. The upgrade fixtures
++# that share these names stay tracked via the `!test-fixtures/**` rule further down,
++# which is a later pattern and therefore wins.
++applications.md
++follow-ups.md
++# The tracker's derived SQLite index (tracker.mjs, #918). It sits beside the
++# tracker markdown, so on the standard layout it lands in data/ and is already
++# covered by the rules above — but resolveTrackerPath() falls back to
++# `<root>/applications.md` when data/applications.md is absent, and the index
++# follows it there. That is the legacy install layout, and it is also every
++# fresh clone: `node test-all.mjs` leaves a 36KB applications.db in the repo
++# root, which `git add .` then stages.
++# Its content is the whole tracker — company, role, score, status, notes — so it
++# carries the same PII as the file it indexes, under a name none of the rules
++# above match. SQLite's -wal/-shm sidecars travel with it.
++# Deliberately not root-anchored. The index follows the tracker markdown, and
++# getCareerOpsRoot() resolves a relative CAREER_OPS_ROOT (or .career-ops-data
++# marker) against the codebase directory — so a data root configured as
++# `career-data` puts both inside the checkout, in neither of the two places an
++# anchored rule would cover. Nothing tracked in this repo ends in .db, and an
++# ignore rule cannot untrack a file that is already tracked, so the cost of the
++# wider glob is a `git add -f` on a .db fixture nobody has added yet; the cost
++# of the narrower one is this leak, for every non-default data root.
++*.db
++*.db-wal
++*.db-shm
++# OpenRouter runner — generated data (personal, never commit)
++data/model-blacklist.json
++# IDE-specific local config
++.idea/
++.vscode/
++.opencode/settings.local.json
++.opencode/memory/
++# OpenCode project config (often holds personal MCP/model/per-machine prefs).
++opencode.json
++# Claude Code project-level MCP server config — commonly ends up holding
++# personal server credentials (e.g. a plugin's API token) once a user adds
++# an MCP server, same risk class as .env.
++.mcp.json
++career-dashboard.exe
++package-lock.json
++!web/package-lock.json
++# Playwright MCP server run artifacts (ephemeral, machine-local)
++.playwright-mcp/
++test-results/
++playwright-report/
++# Planning (local scratchpad)
++plan/
++# Web — runtime cache/history the dashboard writes locally; nothing here is tracked.
++.career-ops-web/
++# Upgrade-test fixtures are fictional system-layer data, never user data
++# (see DATA_CONTRACT.md). Re-include them past the unanchored user-layer
++# patterns above (cv.md, portals.yml).
++!test-fixtures/**
++# Profile intake sources (master CV / LinkedIn export / diplomas / references
++# — user PII, never commit). Ship only the system-owned scaffold. #1723
++/documents
++documents/*
++!documents/.gitkeep
++!documents/README.md
++# Intake fingerprints — the recorded source filenames may themselves carry
++# PII (e.g. cv/jane-doe-master-cv.pdf). #1723
++data/intake-state.json
++data/agent-inbox.md

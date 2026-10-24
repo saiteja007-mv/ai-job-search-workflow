@@ -1,0 +1,139 @@
+#!/usr/bin/env python3
+"""notify -- send a message to one or more channels. Python 3 stdlib only, runs on Linux, macOS and Windows.
+
+usage: notify -t TARGET[,TARGET...] [-s SUBJECT] [-f -] < body.txt
+       notify --self-test
+
+TARGET is one of:
+  slack                 incoming webhook        SLACK_WEBHOOK_URL
+  telegram[:CHAT_ID]    bot API                 TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID (or the suffix)
+  discord               webhook                 DISCORD_WEBHOOK_URL
+  teams                 Workflows webhook       TEAMS_WEBHOOK_URL
+  gchat                 Google Chat webhook     GOOGLE_CHAT_WEBHOOK_URL
+  ntfy[:TOPIC]          ntfy.sh or self-hosted  NTFY_URL (default https://ntfy.sh), NTFY_TOPIC (or the suffix), NTFY_TOKEN optional
+  email[:ADDRESS]       SMTP with STARTTLS      SMTP_HOST, SMTP_PORT (587), SMTP_USER, SMTP_PASS, NOTIFY_EMAIL_FROM, NOTIFY_EMAIL_TO (or the suffix)
+  hermes:PLATFORM:ID    Hermes Agent CLI        `hermes send -t PLATFORM:ID` (needs Hermes installed)
+  stdout                print only (testing)
+
+If -t is omitted, NOTIFY_TARGETS is used (for example "telegram,email").
+Exit status is non-zero if any target failed; the others are still tried.
+"""
+import argparse, json, os, smtplib, subprocess, sys, urllib.request
+from email.message import EmailMessage
+
+LIMITS = {"slack": 3500, "telegram": 4000, "discord": 1900, "teams": 3500, "gchat": 3500, "ntfy": 3500}
+
+
+def chunks(text, size):
+    """Split on line boundaries where possible so long reports arrive in readable pieces."""
+    out, cur = [], ""
+    for line in text.splitlines(keepends=True):
+        while len(line) > size:  # a single huge line: hard-split it
+            if cur:
+                out.append(cur); cur = ""
+            out.append(line[:size]); line = line[size:]
+        if len(cur) + len(line) > size:
+            out.append(cur); cur = ""
+        cur += line
+    if cur or not out:
+        out.append(cur)
+    return out
+
+
+def post_json(url, payload, headers=None):
+    req = urllib.request.Request(url, data=json.dumps(payload).encode(), method="POST",
+                                 headers={"Content-Type": "application/json", **(headers or {})})
+    with urllib.request.urlopen(req, timeout=30) as r:
+        r.read()
+
+
+def need(name):
+    v = os.environ.get(name)
+    if not v:
+        raise RuntimeError(f"{name} is not set")
+    return v
+
+
+def send(target, subject, body):
+    kind, _, arg = target.partition(":")
+    text = f"{subject}\n{body}" if subject else body
+    if kind == "stdout":
+        print(text)
+    elif kind == "slack":
+        for part in chunks(text, LIMITS["slack"]):
+            post_json(need("SLACK_WEBHOOK_URL"), {"text": part})
+    elif kind == "telegram":
+        url = f"https://api.telegram.org/bot{need('TELEGRAM_BOT_TOKEN')}/sendMessage"
+        chat = arg or need("TELEGRAM_CHAT_ID")
+        for part in chunks(text, LIMITS["telegram"]):
+            post_json(url, {"chat_id": chat, "text": part, "disable_web_page_preview": True})
+    elif kind == "discord":
+        for part in chunks(text, LIMITS["discord"]):
+            post_json(need("DISCORD_WEBHOOK_URL"), {"content": part})
+    elif kind == "teams":
+        for part in chunks(text, LIMITS["teams"]):
+            post_json(need("TEAMS_WEBHOOK_URL"), {"text": part})
+    elif kind == "gchat":
+        for part in chunks(text, LIMITS["gchat"]):
+            post_json(need("GOOGLE_CHAT_WEBHOOK_URL"), {"text": part})
+    elif kind == "ntfy":
+        base = os.environ.get("NTFY_URL", "https://ntfy.sh").rstrip("/")
+        topic = arg or need("NTFY_TOPIC")
+        headers = {"Title": (subject or "job-search")[:200].encode("ascii", "ignore").decode()}
+        if os.environ.get("NTFY_TOKEN"):
+            headers["Authorization"] = "Bearer " + os.environ["NTFY_TOKEN"]
+        for part in chunks(body, LIMITS["ntfy"]):
+            req = urllib.request.Request(f"{base}/{topic}", data=part.encode(), method="POST", headers=headers)
+            with urllib.request.urlopen(req, timeout=30) as r:
+                r.read()
+    elif kind == "email":
+        msg = EmailMessage()
+        msg["Subject"] = subject or "job-search notification"
+        msg["From"] = need("NOTIFY_EMAIL_FROM")
+        msg["To"] = arg or need("NOTIFY_EMAIL_TO")
+        msg.set_content(body)
+        with smtplib.SMTP(need("SMTP_HOST"), int(os.environ.get("SMTP_PORT", "587")), timeout=30) as s:
+            s.starttls()
+            s.login(need("SMTP_USER"), need("SMTP_PASS"))
+            s.send_message(msg)
+    elif kind == "hermes":
+        cmd = ["hermes", "send", "-t", arg, "-f", "-"] + (["-s", subject] if subject else [])
+        subprocess.run(cmd, input=body.encode(), check=True)
+    else:
+        raise RuntimeError(f"unknown target '{target}'")
+
+
+def self_test():
+    assert chunks("", 10) == [""]
+    assert chunks("a\nb\n", 10) == ["a\nb\n"]
+    assert chunks("aaaa\nbbbb\ncccc\n", 10) == ["aaaa\nbbbb\n", "cccc\n"]
+    assert chunks("x" * 25, 10) == ["x" * 10, "x" * 10, "x" * 5]
+    assert all(len(p) <= 1900 for p in chunks("line\n" * 2000, 1900))
+    assert "".join(chunks("line\n" * 2000, 1900)) == "line\n" * 2000
+    print("notify self-test: ok")
+
+
+def main():
+    ap = argparse.ArgumentParser(description="Send a message to Slack, Telegram, Discord, Teams, Google Chat, ntfy, email or Hermes.")
+    ap.add_argument("-t", "--target", default=os.environ.get("NOTIFY_TARGETS", ""))
+    ap.add_argument("-s", "--subject", default="")
+    ap.add_argument("-f", "--file", default="-", help="'-' (default) reads the body from stdin")
+    ap.add_argument("--self-test", action="store_true")
+    a = ap.parse_args()
+    if a.self_test:
+        return self_test()
+    if not a.target:
+        ap.error("no target: pass -t or set NOTIFY_TARGETS")
+    body = sys.stdin.read() if a.file == "-" else open(a.file, encoding="utf-8").read()
+    failed = 0
+    for t in filter(None, (x.strip() for x in a.target.split(","))):
+        try:
+            send(t, a.subject, body)
+        except Exception as e:  # keep going so one broken channel doesn't silence the others
+            print(f"notify: {t} failed: {e}", file=sys.stderr)
+            failed += 1
+    sys.exit(1 if failed else 0)
+
+
+if __name__ == "__main__":
+    main()

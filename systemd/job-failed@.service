@@ -1,0 +1,7 @@
+# /home/<YOU>/.config/systemd/user/job-failed@.service
+[Unit]
+Description=Slack alert: %I failed
+
+[Service]
+Type=oneshot
+ExecStart=/home/<YOU>/automations/bin/job-failed %I

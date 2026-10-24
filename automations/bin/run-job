@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+# run-job <job-name> <deliver-target> -- <command...>
+#
+# Runs <command...>, capturing its stdout and stderr separately (each is also
+# echoed to this process's own stdout/stderr, which systemd sends to the
+# journal). Delivery via `hermes send` (no LLM, no running gateway):
+#   - exit != 0            -> send "<job-name> failed" + last 25 lines of output
+#   - exit 0, stdout empty -> send nothing
+#   - exit 0, stdout set   -> send stdout as the message
+# RUN_JOB_DRY_RUN=1 prints what would be sent instead of calling `hermes send`.
+# RUN_JOB_SENDER=notify sends through ./notify instead (Slack/Telegram/Discord/Teams/ntfy/email,
+# no Hermes needed); <deliver-target> is then a notify target such as "telegram,email".
+# If the send itself fails, this script exits non-zero so systemd records it.
+set -uo pipefail
+# ponytail: no `set -e` -- we need the wrapped command's real exit code, not
+# an early exit from this wrapper.
+
+usage() {
+  echo "usage: run-job <job-name> <deliver-target> -- <command...>" >&2
+  exit 2
+}
+
+[ $# -ge 1 ] || usage
+job_name=$1; shift
+[ $# -ge 1 ] || usage
+target=$1; shift
+[ "${1:-}" = "--" ] || usage
+shift
+[ $# -ge 1 ] || usage
+
+# ponytail: bounded set of common secret/token shapes, not a real secret
+# scanner. Covers the failure body that gets posted to Slack unfiltered
+# (any job's stdout+stderr can end up here, e.g. a subprocess's own error
+# text). Upgrade path: a real secret-detection tool (e.g. gitleaks) piped
+# in here, if a real leak ever gets past this.
+scrub_secrets() {
+  sed -E \
+    -e 's/Bearer[[:space:]]+[^[:space:]]+/Bearer [REDACTED]/gI' \
+    -e 's/([Tt]oken=)[^[:space:]&]+/\1[REDACTED]/g' \
+    -e 's/(Authorization:?[[:space:]]*)[^[:space:]]+/\1[REDACTED]/gI' \
+    -e 's/(X-API-KEY:?[[:space:]]*)[^[:space:]]+/\1[REDACTED]/gI'
+}
+
+tmp_out=$(mktemp) || exit 1
+tmp_err=$(mktemp) || exit 1
+cleanup() { rm -f "$tmp_out" "$tmp_err"; }
+trap cleanup EXIT
+
+"$@" >"$tmp_out" 2>"$tmp_err"
+exit_code=$?
+
+# Echo captured output into this unit's own stdout/stderr -> journalctl.
+cat "$tmp_out"
+cat "$tmp_err" >&2
+
+send_rc=0
+dry=${RUN_JOB_DRY_RUN:-0}
+
+# deliver [subject] -- body on stdin
+deliver() {
+  if [ "${RUN_JOB_SENDER:-hermes}" = "notify" ]; then
+    "$(dirname "$0")/notify" -t "$target" ${1:+-s "$1"}
+  else
+    hermes send -t "$target" ${1:+-s "$1"} -f -
+  fi
+}
+
+if [ "$exit_code" -ne 0 ]; then
+  subject="❌ ${job_name} failed (exit ${exit_code}) on <HOME_SERVER>"
+  body=$(cat "$tmp_out" "$tmp_err" | tail -n 25 | scrub_secrets)
+  if [ "$dry" = "1" ]; then
+    printf 'DRY RUN: would send to %s\nsubject: %s\n--- body (last 25 lines) ---\n%s\n' \
+      "$target" "$subject" "$body"
+  else
+    printf '%s\n' "$body" | deliver "$subject"
+    send_rc=$?
+  fi
+elif [ -s "$tmp_out" ]; then
+  if [ "$dry" = "1" ]; then
+    printf 'DRY RUN: would send to %s\n--- body ---\n%s\n' "$target" "$(cat "$tmp_out")"
+  else
+    deliver <"$tmp_out"
+    send_rc=$?
+  fi
+fi
+# exit 0, empty stdout -> nothing to send.
+
+final_exit=$exit_code
+[ "$send_rc" -eq 0 ] || final_exit=1
+exit "$final_exit"
